@@ -30,7 +30,7 @@ sys.path[:0] = ["path_to_where_this_lives/fabtools"]
 import fabtools
 """
 from fabric.api import *
-from fabric.colors import red
+from fabric.colors import red, green
 
 
 def pear_detect(package):
