@@ -22,9 +22,16 @@
 # THE SOFTWARE.
 """
 fabtools.py - Collection of helpers for fabric
+
+To include it in the fabfile.py add this near the top
+
+import sys
+sys.path[:0] = ["path_to_where_this_lives/fabtools"]
+import fabtools
 """
 from fabric.api import *
 from fabric.colors import red
+
 
 def pear_detect(package):
   """
@@ -39,6 +46,7 @@ def pear_detect(package):
   else:
     print(red('pear is not installed', True))
     return False
+
 
 def which(program):
   """
@@ -60,3 +68,52 @@ def which(program):
         return exe_file
 
   return None
+
+
+def git_archive_all(output):
+    """
+    Creates a gzipped tar file as git-archive would, but includes all the
+    submodules if any exist. Run this task at root directory of your git
+    repository.
+
+    Source from https://github.com/ikame/fabric-git-archive-all
+    """
+    import os
+    import tarfile
+
+    def ls_files(prefix=''):
+        """
+        Does a `git ls-files` on every git repository (eg: submodules)
+        found in the working git repository and returns a list with all the
+        filenames returned by each `git ls-files`
+
+         --full-name Forces paths to be output relative to the project top directory
+         --exclude-standard adds standard git exclusions (.git/info/exclude, .gitignore, ...)
+        """
+        command = 'git ls-files --full-name --exclude-standard'
+        raw_files = local(command, capture=True)
+        files = []
+
+        for filename in raw_files.split('\n'):
+            if os.path.isdir(filename) and os.path.exists(os.path.join(filename, '.git')):
+                os.chdir(filename)
+                files.extend(ls_files(prefix=filename))
+            else:
+                files.append(os.path.join(prefix, filename))
+
+        return files
+
+    cwd = os.getcwd()
+    files = ls_files()
+    os.chdir(cwd)
+
+    project_tar = tarfile.open(output, 'w:gz')
+
+    for filename in files:
+        project_tar.add(filename)
+
+    project_tar.close()
+
+    print(green('Archive created at %s' % output))
+
+
