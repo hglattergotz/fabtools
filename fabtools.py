@@ -46,7 +46,7 @@ def load_yaml(path):
     """
     Load a yaml file and return the content
     """
-    f = open(config_path)
+    f = open(path)
     yml_content = yaml.load(f)
     f.close()
 
