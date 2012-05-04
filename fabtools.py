@@ -20,54 +20,76 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
-"""
-fabtools.py - Collection of helpers for fabric
 
-To include it in the fabfile.py add this near the top
+# fabtools.py - Collection of helpers for fabric
+#
+# To include it in the fabfile.py add this near the top
+#
+# import sys
+# sys.path[:0] = ["path_to_where_this_lives/fabtools"]
+# import fabtools
 
-import sys
-sys.path[:0] = ["path_to_where_this_lives/fabtools"]
-import fabtools
-"""
 from fabric.api import *
 from fabric.colors import red, green
 
+try:
+    import yaml
+except ImportError:
+    if confirm(red('pyYaml module not installed. Install it now?', bold=True)):
+        install_py_yaml()
+        exit(0)
+    else:
+        exit(1)
+
+
+def load_config(config_path):
+    """
+    Load the yaml configuration into the env variable
+    """
+    f = open(config_path)
+    config = yaml.load(f)
+    f.close()
+
+    for k, v in config['env'].iteritems():
+        env[k] = v
+
 
 def pear_detect(package):
-  """
-  Detect if a pear package is installed.
-  """
-  if which('pear'):
-    pear_out = local('pear list -a', True)
-    if pear_out.find(package) == -1:
-      return False
+    """
+    Detect if a pear package is installed.
+    """
+    if which('pear'):
+        pear_out = local('pear list -a', True)
+        if pear_out.find(package) == -1:
+            return False
+        else:
+            return True
     else:
-      return True
-  else:
-    print(red('pear is not installed', True))
-    return False
+        print(red('pear is not installed', True))
+        return False
 
 
 def which(program):
-  """
-  Return the path of an executable file.
-  Borrowed from http://stackoverflow.com/a/377028/250780
-  """
-  import os
-  def is_exe(fpath):
-    return os.path.exists(fpath) and os.access(fpath, os.X_OK)
+    """
+    Return the path of an executable file.
+    Borrowed from http://stackoverflow.com/a/377028/250780
+    """
+    import os
+    def is_exe(fpath):
+        return os.path.exists(fpath) and os.access(fpath, os.X_OK)
 
-  fpath, fname = os.path.split(program)
-  if fpath:
-    if is_exe(program):
-      return program
-  else:
-    for path in os.environ["PATH"].split(os.pathsep):
-      exe_file = os.path.join(path, program)
-      if is_exe(exe_file):
-        return exe_file
+    fpath, fname = os.path.split(program)
 
-  return None
+    if fpath:
+        if is_exe(program):
+            return program
+    else:
+        for path in os.environ["PATH"].split(os.pathsep):
+            exe_file = os.path.join(path, program)
+            if is_exe(exe_file):
+                return exe_file
+
+    return None
 
 
 def git_archive_all(output):
@@ -117,3 +139,8 @@ def git_archive_all(output):
     print(green('Archive created at %s' % output))
 
 
+def install_py_yaml():
+    """
+    Install the pyYaml module
+    """
+    local('curl -O http://pyyaml.org/download/pyyaml/PyYAML-3.10.tar.gz && tar -xzf PyYAML-3.10.tar.gz && cd PyYAML-3.10 && python setup.py install && cd .. && rm -rf PyYAML-3.10.tar.gz PyYAML-3.10')
