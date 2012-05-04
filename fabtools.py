@@ -42,13 +42,22 @@ except ImportError:
         exit(1)
 
 
+def load_yaml(path):
+    """
+    Load a yaml file and return the content
+    """
+    f = open(config_path)
+    yml_content = yaml.load(f)
+    f.close()
+
+    return yml_content
+
+
 def load_config(config_path):
     """
     Load the yaml configuration into the env variable
     """
-    f = open(config_path)
-    config = yaml.load(f)
-    f.close()
+    config = load_yaml(config_path)
 
     for k, v in config['env'].iteritems():
         env[k] = v
