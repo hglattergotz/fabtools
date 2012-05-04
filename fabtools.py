@@ -55,7 +55,7 @@ def load_yaml(path):
 
 def load_config(config_path):
     """
-    Load the yaml configuration into the env variable
+    Load the yaml configuration into the env dictionary
     """
     config = load_yaml(config_path)
 
