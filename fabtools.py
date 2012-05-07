@@ -29,6 +29,7 @@
 # sys.path[:0] = ["path_to_where_this_lives/fabtools"]
 # import fabtools
 
+import os
 from fabric.api import *
 from fabric.colors import red, green
 
@@ -41,29 +42,54 @@ except ImportError:
     else:
         exit(1)
 
-
 def load_yaml(path):
     """
-    Load a yaml file and return the content
+    Load a yaml file located at 'path' and return the content as a dictionary.
+    If the yaml file does not exist an empty dictionary will be returned.
     """
-    f = open(path)
-    yml_content = yaml.load(f)
-    f.close()
+    if os.path.exists(path):
+        f = open(path)
+        data = yaml.load(f)
+        f.close()
+        return data
+    else:
+        return {}
 
-    return yml_content
 
-
-def load_yaml_settings(path):
+def load_yaml_config(path, env = ''):
     """
-    Take given file path and return dictionary of the yaml data.
+    Load an environment aware yaml configuration file into a dictionary.
+    If a configuration depends on the target of the deployment it is possible
+    to pass the name of the environment to this function (env). In such a case
+    the yaml configuration file must look like this:
+
+    prod:
+        key1: prod_value1
+        key2: prod_value2
+        :
+    dev:
+        key1: dev_value1
+        key2: dev_value2
+        :
+
+    'prod' and 'dev' in the above example are the names of the environments
+    present in this file.
+    Calling the function with 'prod' as the value for env will return the key/
+    value pairs in the prod section.
     """
     config = load_yaml(path)
 
-    for k, v in config['env'].iteritems():
-        env[k] = v
+    if config:
+        if env != '':
+            if env in config:
+                return config[env]
+            else:
+                return {}
+
+    return config
 
 
-def load_keyval_settings(path):
+def load_settings(path):
     """
     Take given file path and return dictionary of any key=value pairs found.
     Copy and paste from fabric project's main.py.
