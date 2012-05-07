@@ -53,14 +53,28 @@ def load_yaml(path):
     return yml_content
 
 
-def load_config(config_path):
+def load_yaml_settings(path):
     """
-    Load the yaml configuration into the env dictionary
+    Take given file path and return dictionary of the yaml data.
     """
-    config = load_yaml(config_path)
+    config = load_yaml(path)
 
     for k, v in config['env'].iteritems():
         env[k] = v
+
+
+def load_keyval_settings(path):
+    """
+    Take given file path and return dictionary of any key=value pairs found.
+    Copy and paste from fabric project's main.py.
+    """
+    if os.path.exists(path):
+        comments = lambda s: s and not s.startswith("#")
+        settings = filter(comments, open(path, 'r'))
+        return dict((k.strip(), v.strip()) for k, _, v in
+            [s.partition('=') for s in settings])
+    # Handle nonexistent or empty settings file
+    return {}
 
 
 def pear_detect(package):
