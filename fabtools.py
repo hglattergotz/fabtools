@@ -63,6 +63,9 @@ def load_yaml_config(path, env = ''):
     to pass the name of the environment to this function (env). In such a case
     the yaml configuration file must look like this:
 
+    all:
+        key1: defaultValue1
+        :
     prod:
         key1: prod_value1
         key2: prod_value2
@@ -72,17 +75,24 @@ def load_yaml_config(path, env = ''):
         key2: dev_value2
         :
 
+    'all' is the default that will be returned if no env value is passed.
     'prod' and 'dev' in the above example are the names of the environments
     present in this file.
     Calling the function with 'prod' as the value for env will return the key/
-    value pairs in the prod section.
+    value pairs from the 'all' section with the values from the 'prod' section
+    overriding any that might have been loaded from the all section.
     """
     config = load_yaml(path)
 
     if config:
+        if 'all' in config:
+            all = config['all']
+        else:
+            return {}
         if env != '':
             if env in config:
-                return config[env]
+                all.update(config[env])
+                return all
             else:
                 return {}
 
