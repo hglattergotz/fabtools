@@ -42,6 +42,7 @@ except ImportError:
     else:
         exit(1)
 
+
 def load_yaml(path):
     """
     Load a yaml file located at 'path' and return the content as a dictionary.
@@ -202,6 +203,29 @@ def git_archive_all(path, archive_file_name):
     os.chdir(cwd)
 
     print(green('Archive created at %s/%s' % (path, archive_file_name)))
+
+
+def is_git_dirty():
+    """
+    Determine if the current working copy is dirty - have files been modified
+    or are there untracked files.
+    """
+    dirty_status = local('git diff --quiet || echo "*"', capture=True)
+    if dirty_status == '*':
+        return True
+
+    untracked_count = int(local('git status --porcelain 2>/dev/null| grep "^??" | wc -l', capture=True))
+    if untracked_count > 0:
+        return True
+
+    return False
+
+
+def get_git_commit():
+    """
+    Get the commit SHA1 (short) of the current branch.
+    """
+    return local('git rev-parse --short HEAD', capture=True)
 
 
 def install_py_yaml():
