@@ -221,7 +221,7 @@ def is_git_dirty():
     return False
 
 
-def get_git_commit():
+def git_sha1_commit():
     """
     Get the commit SHA1 (short) of the current branch.
     """
