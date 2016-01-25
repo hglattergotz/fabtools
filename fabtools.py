@@ -32,6 +32,7 @@
 import os
 from fabric.api import *
 from fabric.colors import red, green
+from fabric.contrib.console import confirm
 
 try:
     import yaml
